@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import time as _time
 import urllib.request
 from dataclasses import dataclass
 from datetime import date, datetime, time
@@ -29,8 +30,18 @@ class Item:
     kind: Literal["assignment", "event"]
 
 
-def fetch_feed(url: str, cache_path: Path, timeout: int = 20) -> tuple[str, bool]:
-    """Return (ics_text, stale). Falls back to the cache on any failure."""
+def fetch_feed(url: str, cache_path: Path, timeout: int = 20,
+               retries: int = 0, retry_wait: float = 4.0) -> tuple[str, bool]:
+    """Return (ics_text, stale). Falls back to the cache once every attempt has failed."""
+    for _ in range(retries):
+        try:
+            return _fetch_once(url, cache_path, timeout, use_cache=False)
+        except FeedError:
+            _time.sleep(retry_wait)
+    return _fetch_once(url, cache_path, timeout, use_cache=True)
+
+
+def _fetch_once(url: str, cache_path: Path, timeout: int, use_cache: bool) -> tuple[str, bool]:
     if url.startswith("webcal://"):
         url = "https://" + url[len("webcal://"):]
     req = urllib.request.Request(url, headers={"User-Agent": "canvas-today"})
@@ -40,9 +51,10 @@ def fetch_feed(url: str, cache_path: Path, timeout: int = 20) -> tuple[str, bool
         if "BEGIN:VCALENDAR" not in text:
             raise ValueError("response is not a calendar")
     except Exception:  # noqa: BLE001 - deliberately generic; never surface the URL
-        if cache_path.is_file():
+        if use_cache and cache_path.is_file():
             return cache_path.read_text(encoding="utf-8"), True
-        raise FeedError("Could not download the calendar feed and no cached copy exists.") from None
+        raise FeedError("Could not download the calendar feed and no saved copy exists. "
+                        "Check your connection and the feed_url in config.toml.") from None
     cache_path.parent.mkdir(parents=True, exist_ok=True)
     cache_path.write_text(text, encoding="utf-8")
     return text, False

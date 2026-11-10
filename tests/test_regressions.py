@@ -39,6 +39,19 @@ class FetchGuard(unittest.TestCase):
             self.assertIn("BEGIN:VCALENDAR", cache.read_text())
 
 
+    def test_retries_before_falling_back(self):
+        import urllib.error
+        with tempfile.TemporaryDirectory() as d:
+            cache = Path(d) / "feed_cache.ics"
+            ok = FakeResponse(b"BEGIN:VCALENDAR\nEND:VCALENDAR\n")
+            with mock.patch("urllib.request.urlopen",
+                            side_effect=[urllib.error.URLError("down"), ok]) as m:
+                text, stale = feed.fetch_feed("https://example.invalid/x.ics", cache,
+                                              retries=2, retry_wait=0)
+            self.assertFalse(stale)
+            self.assertEqual(m.call_count, 2)
+
+
 class SimilarTitles(unittest.TestCase):
     def test_token_subset(self):
         self.assertTrue(classify._similar("Midterm 1", "Midterm Exam 1"))
