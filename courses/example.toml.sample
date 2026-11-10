@@ -1,0 +1,28 @@
+# Example course file. Copy to courses/<name>.toml (the .sample suffix is not loaded).
+code = "CS 400"                 # short display code
+name = "Programming III"
+match = ["COMPSCI 400"]         # case-insensitive substrings matched against the feed's [bracket context]
+color = "#2a6f97"               # optional
+
+[thresholds]                    # optional grade cut-offs, percent
+A = 93
+AB = 88
+
+[[category]]
+name = "Exams"
+kind = "exam"                   # exam, project, paper, quiz, homework, lab, participation, other
+weight = 45                     # percent of final grade
+count = 3                       # optional: items in category -> per-item weight = weight / count
+keywords = ["exam", "midterm", "final"]   # case-insensitive, word-boundary match on item title
+lead_days = 10                  # optional; default depends on kind
+
+[[category]]
+name = "Homework"
+kind = "homework"
+weight = 55
+keywords = ["homework", "hw"]
+
+[[event]]                       # dated syllabus items that may not be in Canvas
+title = "Midterm 1"
+date = 2026-11-19               # date, or datetime 2026-11-19T19:15:00 (local time)
+category = "Exams"

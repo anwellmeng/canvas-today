@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "canvas-today"
+version = "0.1.0"
+description = "Daily what's-due breakdown from a Canvas calendar feed and syllabus files"
+requires-python = ">=3.13"
+dependencies = ["icalendar"]
+
+[project.scripts]
+today = "canvas_today.cli:main"
+
+[tool.setuptools]
+packages = ["canvas_today"]

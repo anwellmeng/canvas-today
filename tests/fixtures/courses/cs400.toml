@@ -1,0 +1,40 @@
+code = "CS 400"
+name = "Programming III"
+match = ["COMPSCI 400"]
+color = "#2a6f97"
+
+[thresholds]
+A = 93
+AB = 88
+
+[[category]]
+name = "Exams"
+kind = "exam"
+weight = 45
+count = 3
+keywords = ["exam", "midterm", "final"]
+lead_days = 10
+
+[[category]]
+name = "Homework"
+kind = "homework"
+weight = 30
+count = 10
+keywords = ["homework", "hw"]
+
+[[category]]
+name = "Projects"
+kind = "project"
+weight = 25
+count = 2
+keywords = ["project"]
+
+[[event]]
+title = "Midterm 1"
+date = 2026-11-19T19:15:00
+category = "Exams"
+
+[[event]]
+title = "Final Exam"
+date = 2026-12-17
+category = "Exams"

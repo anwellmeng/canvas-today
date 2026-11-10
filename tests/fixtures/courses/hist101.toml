@@ -1,0 +1,16 @@
+code = "HIST 101"
+name = "World History"
+match = ["HIST 101"]
+
+[[category]]
+name = "Papers"
+kind = "paper"
+weight = 60
+count = 3
+keywords = ["paper", "essay"]
+
+[[category]]
+name = "Participation"
+kind = "participation"
+weight = 40
+keywords = ["discussion"]

@@ -1,0 +1,6 @@
+config.toml
+data/
+.venv/
+syllabi/
+__pycache__/
+*.egg-info/

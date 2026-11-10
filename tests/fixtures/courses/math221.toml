@@ -1,0 +1,23 @@
+code = "MATH 221"
+name = "Calculus"
+match = ["MATH 221"]
+
+[[category]]
+name = "Exams"
+kind = "exam"
+weight = 50
+count = 2
+keywords = ["exam", "midterm"]
+
+[[category]]
+name = "Quizzes"
+kind = "quiz"
+weight = 20
+count = 10
+keywords = ["quiz"]
+
+[[category]]
+name = "Problem Sets"
+kind = "homework"
+weight = 30
+keywords = ["problem set", "pset", "ps"]

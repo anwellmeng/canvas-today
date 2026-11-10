@@ -1,0 +1,6 @@
+# Copy to config.toml and fill in. config.toml is git-ignored (the feed URL is a secret).
+feed_url = ""
+timezone = "America/Chicago"
+horizon_days = 30
+overdue_days = 3
+open_browser = true
