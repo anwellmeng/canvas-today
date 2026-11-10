@@ -43,7 +43,8 @@ def build_report(cfg: Config, now: datetime, offline: bool = False) -> Report:
     if stale:
         cache_time = datetime.fromtimestamp(cfg.cache_path.stat().st_mtime, cfg.timezone)
 
-    feed_items = parse_feed(text, cfg.timezone)
+    feed_items = [i for i in parse_feed(text, cfg.timezone)
+                  if i.title.strip().lower() not in cfg.ignore_titles]
     items = feed_items + [i for c in courses for i in syllabus_items(c, cfg.timezone)]
     merged = merge_duplicates([classify(i, courses) for i in items])
 

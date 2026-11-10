@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import re
+import ssl
 import time as _time
+import urllib.error
 import urllib.request
 from dataclasses import dataclass
 from datetime import date, datetime, time
@@ -41,20 +43,43 @@ def fetch_feed(url: str, cache_path: Path, timeout: int = 20,
     return _fetch_once(url, cache_path, timeout, use_cache=True)
 
 
+# python.org builds of Python on macOS ship without CA certificates; the system bundle is here.
+_SYSTEM_CA_BUNDLE = Path("/etc/ssl/cert.pem")
+
+
+def _ssl_context() -> ssl.SSLContext:
+    ctx = ssl.create_default_context()
+    if not ctx.cert_store_stats()["x509_ca"] and _SYSTEM_CA_BUNDLE.is_file():
+        ctx.load_verify_locations(cafile=str(_SYSTEM_CA_BUNDLE))
+    return ctx
+
+
+def _reason(e: Exception) -> str:
+    """A short cause for the error message. Never includes the URL."""
+    if isinstance(e, urllib.error.HTTPError):
+        return f"Canvas answered HTTP {e.code}"
+    if isinstance(getattr(e, "reason", None), ssl.SSLError) or isinstance(e, ssl.SSLError):
+        return "the secure connection could not be verified"
+    if isinstance(e, ValueError):
+        return "the address did not return a calendar"
+    return "network error"
+
+
 def _fetch_once(url: str, cache_path: Path, timeout: int, use_cache: bool) -> tuple[str, bool]:
     if url.startswith("webcal://"):
         url = "https://" + url[len("webcal://"):]
     req = urllib.request.Request(url, headers={"User-Agent": "canvas-today"})
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
+        with urllib.request.urlopen(req, timeout=timeout, context=_ssl_context()) as resp:
             text = resp.read().decode("utf-8")
         if "BEGIN:VCALENDAR" not in text:
             raise ValueError("response is not a calendar")
-    except Exception:  # noqa: BLE001 - deliberately generic; never surface the URL
+    except Exception as e:  # noqa: BLE001 - deliberately generic; never surface the URL
         if use_cache and cache_path.is_file():
             return cache_path.read_text(encoding="utf-8"), True
-        raise FeedError("Could not download the calendar feed and no saved copy exists. "
-                        "Check your connection and the feed_url in config.toml.") from None
+        raise FeedError(f"Could not download the calendar feed ({_reason(e)}) and no saved "
+                        "copy exists. Check your connection and the feed_url in config.toml."
+                        ) from None
     cache_path.parent.mkdir(parents=True, exist_ok=True)
     cache_path.write_text(text, encoding="utf-8")
     return text, False

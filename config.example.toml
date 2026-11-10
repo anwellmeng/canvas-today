@@ -4,3 +4,5 @@ timezone = "America/Chicago"
 horizon_days = 30
 overdue_days = 3
 open_browser = true
+# Feed items to leave out entirely, matched on the exact title (case-insensitive).
+ignore_titles = []

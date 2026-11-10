@@ -50,7 +50,10 @@ def match_course(context: str | None, courses: list[Course]) -> Course | None:
 
 def _kw_in(keyword: str, title: str) -> bool:
     # Word boundary on letters only, so "hw3" matches "hw" but "steps" does not match "ps".
-    pattern = rf"(?<![a-z]){re.escape(keyword.lower())}(?![a-z])"
+    # A trailing "*" makes it a prefix: "zybooks*" matches "zyBooksW11".
+    prefix = keyword.endswith("*")
+    stem = re.escape(keyword.rstrip("*").lower())
+    pattern = rf"(?<![a-z]){stem}" + ("" if prefix else "(?![a-z])")
     return re.search(pattern, title.lower()) is not None
 
 

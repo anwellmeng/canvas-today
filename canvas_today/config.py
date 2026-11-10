@@ -20,6 +20,7 @@ class Config:
     horizon_days: int = 30
     overdue_days: int = 3
     open_browser: bool = True
+    ignore_titles: tuple[str, ...] = ()  # feed items to drop, e.g. "Office Hours"
 
     @property
     def data_dir(self) -> Path:
@@ -71,6 +72,7 @@ def load_config(root: Path, require_feed: bool = True) -> Config:
             horizon_days=int(raw.get("horizon_days", 30)),
             overdue_days=int(raw.get("overdue_days", 3)),
             open_browser=bool(raw.get("open_browser", True)),
+            ignore_titles=tuple(str(t).strip().lower() for t in raw.get("ignore_titles", [])),
         )
     except (TypeError, ValueError) as e:
         raise ConfigError(f"Invalid numeric setting in {path}: {e}") from e

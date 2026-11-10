@@ -59,6 +59,30 @@ class SimilarTitles(unittest.TestCase):
         self.assertFalse(classify._similar("Homework 3", "Homework 4"))
 
 
+class Keywords(unittest.TestCase):
+    def test_trailing_star_is_a_prefix(self):
+        self.assertTrue(classify._kw_in("zybooks*", "zyBooksW11"))
+        self.assertFalse(classify._kw_in("zybooks", "zyBooksW11"))
+        self.assertFalse(classify._kw_in("ps*", "steps"))
+
+
+class IgnoreTitles(unittest.TestCase):
+    def test_ignored_titles_are_dropped(self):
+        from canvas_today.config import load_config
+        from canvas_today.pipeline import build_report
+        from .helpers import NOW, make_root
+        with tempfile.TemporaryDirectory() as d:
+            root = make_root(Path(d))
+            before = build_report(load_config(root), NOW, offline=True)
+            with (root / "config.toml").open("a") as f:
+                f.write('ignore_titles = ["lecture: graphs"]\n')
+            after = build_report(load_config(root), NOW, offline=True)
+        titles = lambda r: {x.classified.item.title for x in r.ranked}  # noqa: E731
+        self.assertIn("Lecture: Graphs", titles(before))
+        self.assertNotIn("Lecture: Graphs", titles(after))
+        self.assertEqual(after.feed_count, before.feed_count - 1)
+
+
 class CourseFiles(unittest.TestCase):
     def test_wrong_shape_is_reported_not_raised(self):
         with tempfile.TemporaryDirectory() as d:
