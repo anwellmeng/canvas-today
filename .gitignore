@@ -5,3 +5,5 @@ syllabi/
 __pycache__/
 *.egg-info/
 .DS_Store
+# Personal course files stay local; only the sample is tracked.
+courses/*.toml
